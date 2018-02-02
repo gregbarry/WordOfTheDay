@@ -1,0 +1,29 @@
+{
+  "name": "wordoftheday",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gregbarry/WordOfTheDay.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gregbarry/WordOfTheDay/issues"
+  },
+  "homepage": "https://github.com/gregbarry/WordOfTheDay#readme",
+  "devDependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "got": "^8.0.3",
+    "moment": "^2.20.1",
+    "snoowrap": "^1.15.2",
+    "word-definition": "^2.1.6"
+  },
+  "dependencies": {
+    "dotenv": "^5.0.0"
+  }
+}
