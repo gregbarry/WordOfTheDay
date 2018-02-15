@@ -6,7 +6,7 @@ const moment = require('moment');
 const wd = require('word-definition');
 const snoowrap = require('snoowrap');
 
-let days = 45;
+let days = 730;
 
 const date = moment().subtract(days, 'days').format('Y/MM/DD');
 const today = moment().format('MMMM Do, Y');
@@ -40,8 +40,7 @@ const checkReddit = async word => {
 
     try {
         const res = await got(url, {json: true});
-        const {children} = res.body.data;
-        return children;
+        return res.body.data.children;
     } catch(ex) {
         console.log(ex);
     }
@@ -50,10 +49,10 @@ const checkReddit = async word => {
 const startOver = () => {
     days++;
     const previousDay = moment().subtract(days, 'days').format('Y/MM/DD');
-    getWordByDay(previousDay);
+    main(previousDay);
 }
 
-const getWordByDay = async date => {
+const main = async date => {
     try {
         const word = await getWord(`${base}/wordoftheday/${date}`);
         console.log(`found ${word} for ${date}`);
@@ -63,8 +62,9 @@ const getWordByDay = async date => {
             wd.getDef(word, 'en', null, res => {
                 if (!res.err) {
                     const {category, definition} = res;
+                    const attribution = `https://en.wiktionary.org/wiki/${word}`;
                     const title = `${today} - ${word} - ${definition}`;
-                    const text = `_${category}_\n\n${definition}`;
+                    const text = `_${category}_\n\n${definition}\n\n[wiktionary.org](${attribution})`;
 
                     console.log('title', title);
                     console.log('text', text);
@@ -90,4 +90,4 @@ const getWordByDay = async date => {
     }
 }
 
-getWordByDay(date);
+main(date);
