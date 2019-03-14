@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "./node_modules/.bin/babel-node index.js"
   },
   "repository": {
     "type": "git",
@@ -17,13 +17,20 @@
   },
   "homepage": "https://github.com/gregbarry/WordOfTheDay#readme",
   "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.3.4",
+    "@babel/node": "^7.2.2",
+    "@babel/preset-env": "^7.3.4",
+    "babel-eslint": "^10.0.1",
+    "bristol": "^0.4.0",
     "cheerio": "^1.0.0-rc.2",
+    "dotenv": "^5.0.0",
+    "eslint": "^5.15.1",
     "got": "^8.0.3",
+    "lodash": "^4.17.11",
     "moment": "^2.20.1",
+    "mw-dict": "^3.0.0",
     "snoowrap": "^1.15.2",
     "word-definition": "^2.1.6"
-  },
-  "dependencies": {
-    "dotenv": "^5.0.0"
   }
 }
