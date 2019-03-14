@@ -5,8 +5,10 @@ const got = require('got');
 const moment = require('moment');
 const wd = require('word-definition');
 const snoowrap = require('snoowrap');
+const random = Math.floor(Math.random() * (2000 - 0 + 1)) + 0;
+let days = random;
 
-let days = 730;
+console.log(`Using ${random} as a date seed`);
 
 const date = moment().subtract(days, 'days').format('Y/MM/DD');
 const today = moment().format('MMMM Do, Y');
@@ -71,8 +73,8 @@ const main = async date => {
 
                     r.getSubreddit('wordoftheday')
                     .submitSelfpost({
-                         title,
-                         text
+                        title,
+                        text
                     });
 
                     console.log('posted word of the day to reddit!');
