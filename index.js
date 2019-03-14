@@ -1,95 +1,109 @@
 require('dotenv').config();
+import _ from 'lodash';
+import cheerio from 'cheerio';
+import got from 'got';
+import logger from 'bristol';
+import {CollegiateDictionary} from 'mw-dict';
+import moment from 'moment';
+import snoowrap from 'snoowrap';
 
-const cheerio = require('cheerio');
-const got = require('got');
-const moment = require('moment');
-const wd = require('word-definition');
-const snoowrap = require('snoowrap');
+const {mwKey} = process.env;
+const dictionary = new CollegiateDictionary(mwKey);
 const random = Math.floor(Math.random() * (2000 - 0 + 1)) + 0;
 let days = random;
 
-console.log(`Using ${random} as a date seed`);
+logger.addTarget('console');
+logger.info(`Using ${random} as a date seed`);
 
 const date = moment().subtract(days, 'days').format('Y/MM/DD');
 const today = moment().format('MMMM Do, Y');
-const base = 'http://www.dictionary.com';
+const mwUrl = 'https://www.merriam-webster.com';
 const redditBase = 'https://www.reddit.com/r/WordOfTheDay/search/.json?q=';
 const redditOptions = '&restrict_sr=on&sort=relevance&t=all';
 
-const r = new snoowrap({
-    userAgent: 'reddit-bot-example-node',
-    clientId: process.env.CLIENT_ID,
-    clientSecret: process.env.CLIENT_SECRET,
-    username: process.env.REDDIT_USER,
-    password: process.env.REDDIT_PASS
-});
-
 const getWord = async url => {
-    console.log('grabbing a word of the day from dictionary.com');
-    try {
-        const res = await got(url);
-        const $ = cheerio.load(res.body);
-        const wotd = $('.definition-header strong').text();
-        return wotd;
-    } catch(ex) {
-        console.log(ex);
-    }
-}
+    logger.info('grabbing a word of the day from merriam-webster.com');
+    const res = await got(url);
+    const $ = cheerio.load(res.body);
+    const wotd = $('.word-and-pronunciation h1').text();
+    return wotd;
+};
 
-const checkReddit = async word => {
-    console.log('checking reddit to see if word has been posted before');
+const getRedditResults = async word => {
+    logger.info('checking reddit to see if word has been posted before');
     const url = `${redditBase}${word}${redditOptions}`;
-
-    try {
-        const res = await got(url, {json: true});
-        return res.body.data.children;
-    } catch(ex) {
-        console.log(ex);
-    }
-}
+    const res = await got(url, {json: true});
+    const {children: results} = _.get(res, 'body.data', []);
+    return results;
+};
 
 const startOver = () => {
     days++;
     const previousDay = moment().subtract(days, 'days').format('Y/MM/DD');
     main(previousDay);
-}
+};
 
 const main = async date => {
-    try {
-        const word = await getWord(`${base}/wordoftheday/${date}`);
-        console.log(`found ${word} for ${date}`);
-        const reddit = await checkReddit(word);
+    const word = await getWord(`${mwUrl}/word-of-the-day/${date}`);
+    logger.info(`found ${word} for ${date}`);
+    const redditResults = await getRedditResults(word);
+    if (redditResults && redditResults.length === 0) {
+        dictionary.lookup(word).then(result => {
+            const attribution = `${mwUrl}/dictionary/${word}`;
+            const [{
+                definition: definitions = [],
+                functional_label: type = '',
+                popularity = ''
+            }] = result;
 
-        if (reddit.length === 0) {
-            wd.getDef(word, 'en', null, res => {
-                if (!res.err) {
-                    const {category, definition} = res;
-                    const attribution = `https://en.wiktionary.org/wiki/${word}`;
-                    const title = `${today} - ${word} - ${definition}`;
-                    const text = `_${category}_\n\n${definition}\n\n[wiktionary.org](${attribution})`;
+            const popularityText = popularity ? `Popularity: ${popularity}\n\n` : '';
+            let lastNumber = 1;
+            let title = `${today} - ${word}`;
+            let text = `_${type}_`;
+            let defs = '';
 
-                    console.log('title', title);
-                    console.log('text', text);
+            definitions.forEach((definition, i) => {
+                const {meanings = []} = definition;
+                const joinedMeanings = meanings.length > 1 ? meanings.join(' ; ') : meanings[0];
+                const cleanedMeanings = joinedMeanings.replace(':', '');
+                if (cleanedMeanings) {
+                    if (i === 0) {
+                        title = `${title} - ${cleanedMeanings}`;
+                    }
 
-                    r.getSubreddit('wordoftheday')
-                    .submitSelfpost({
-                        title,
-                        text
-                    });
-
-                    console.log('posted word of the day to reddit!');
-                } else {
-                    console.log('there was an error found within this definition object');
-                    startOver();
+                    defs = `${defs}${lastNumber}.${cleanedMeanings}\n`;
+                    lastNumber++;
                 }
             });
-        } else {
-            console.log('word was already used in some capacity, go back another day');
+
+            text = `${text}\n\n${defs}\n\n${popularityText}[merriam-webster.com](${attribution})`;
+
+            logger.info('title', title);
+            logger.info('text', text);
+
+            const {clientId, clientSecret, redditUser: username, redditPass: password} = process.env;
+            const r = new snoowrap({
+                userAgent: 'reddit-bot-example-node',
+                clientId,
+                clientSecret,
+                username,
+                password
+            });
+
+            r.getSubreddit('wordoftheday').submitSelfpost({
+                title,
+                text
+            });
+
+            logger.info('posted word of the day to reddit!');
+        }).catch(err => {
+            logger.info('there was an error found within this definition object', err);
             startOver();
-        }
-    } catch(ex) {
-        console.log(ex);
+        });
+    } else {
+        logger.info('word was already used in some capacity, go back another day');
+        startOver();
     }
-}
+};
 
 main(date);
