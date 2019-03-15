@@ -43,6 +43,12 @@ const startOver = () => {
     main(previousDay);
 };
 
+const cleanMeanings = (meanings = []) => {
+    const joinedMeanings = meanings.length > 1 ? meanings.join(' ; ') : meanings[0];
+    const cleanedMeanings = joinedMeanings.replace(/:/g, '');
+    return cleanedMeanings.trim();
+};
+
 const main = async date => {
     const word = await getWord(`${mwUrl}/word-of-the-day/${date}`);
     logger.info(`found ${word} for ${date}`);
@@ -64,8 +70,7 @@ const main = async date => {
 
             definitions.forEach((definition, i) => {
                 const {meanings = []} = definition;
-                const joinedMeanings = meanings.length > 1 ? meanings.join(' ; ') : meanings[0];
-                const cleanedMeanings = joinedMeanings.replace(':', '');
+                const cleanedMeanings = cleanMeanings(meanings);
                 if (cleanedMeanings) {
                     if (i === 0) {
                         title = `${title} - ${cleanedMeanings}`;
