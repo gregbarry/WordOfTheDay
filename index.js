@@ -65,7 +65,7 @@ const main = async date => {
             const popularityText = popularity ? `Popularity: ${popularity}\n\n` : '';
             let lastNumber = 1;
             let title = `${today} - ${word}`;
-            let text = `_${type}_`;
+            let text = `_${type}_\n\n`;
             let defs = '';
 
             definitions.forEach((definition, i) => {
@@ -76,12 +76,12 @@ const main = async date => {
                         title = `${title} - ${cleanedMeanings}`;
                     }
 
-                    defs = `${defs}${lastNumber}.${cleanedMeanings}\n`;
+                    defs = `${defs}${lastNumber}.${cleanedMeanings}\n\n`;
                     lastNumber++;
                 }
             });
 
-            text = `${text}\n\n${defs}\n\n${popularityText}[merriam-webster.com](${attribution})`;
+            text = `${text}${defs}${popularityText}[merriam-webster.com](${attribution})`;
 
             logger.info('title', title);
             logger.info('text', text);
