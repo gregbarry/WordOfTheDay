@@ -23,14 +23,15 @@
     "@babel/preset-env": "^7.3.4",
     "babel-eslint": "^10.0.1",
     "bristol": "^0.4.0",
-    "cheerio": "^1.0.0-rc.2",
+    "cheerio": "^1.0.0-rc.3",
     "dotenv": "^5.0.0",
     "eslint": "^5.15.1",
     "got": "^8.0.3",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "moment": "^2.20.1",
     "mw-dict": "^3.0.0",
     "snoowrap": "^1.15.2",
-    "word-definition": "^2.1.6"
+    "word-definition": "^2.1.6",
+    "yargs": "^13.3.0"
   }
 }
