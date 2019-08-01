@@ -72,5 +72,6 @@ export const defs = {
         }],
         'popularity': 'Top 30% of words'
     }]
+    // Add Jettison as an example of multiple parts of speech
 };
 
